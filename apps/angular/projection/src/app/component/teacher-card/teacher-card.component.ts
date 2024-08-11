@@ -1,40 +1,38 @@
-import { Component, OnInit } from '@angular/core';
-import { FakeHttpService } from '../../data-access/fake-http.service';
+import {Component, inject} from '@angular/core';
 import { TeacherStore } from '../../data-access/teacher.store';
 import { CardType } from '../../model/card.model';
-import { Teacher } from '../../model/teacher.model';
 import { CardComponent } from '../../ui/card/card.component';
+import {AsyncPipe, NgIf} from "@angular/common";
+import {randTeacher} from "../../data-access/fake-http.service";
+import {ICard} from "../../data-access/card";
 
 @Component({
   selector: 'app-teacher-card',
   template: `
     <app-card
-      [list]="teachers"
+      [list]="teachers$ | async"
       [type]="cardType"
-      customClass="bg-light-red"></app-card>
+      (newItemEvent)="addNewItem()"
+      (deleteEvent)="deleteItem($event)"
+      class="bg-light-red">
+      <img
+        src="assets/img/teacher.png"
+        width="200px" />
+    </app-card>
   `,
-  styles: [
-    `
-      ::ng-deep .bg-light-red {
-        background-color: rgba(250, 0, 0, 0.1);
-      }
-    `,
-  ],
   standalone: true,
-  imports: [CardComponent],
+  imports: [CardComponent, AsyncPipe, NgIf],
 })
-export class TeacherCardComponent implements OnInit {
-  teachers: Teacher[] = [];
+export class TeacherCardComponent implements ICard {
+  private store: TeacherStore = inject(TeacherStore);
+  teachers$ = this.store.teachers$;
   cardType = CardType.TEACHER;
 
-  constructor(
-    private http: FakeHttpService,
-    private store: TeacherStore,
-  ) {}
+  addNewItem() {
+    this.store.addOne(randTeacher());
+  }
 
-  ngOnInit(): void {
-    this.http.fetchTeachers$.subscribe((t) => this.store.addAll(t));
-
-    this.store.teachers$.subscribe((t) => (this.teachers = t));
+  deleteItem(id: number) {
+    this.store.deleteOne(id);
   }
 }

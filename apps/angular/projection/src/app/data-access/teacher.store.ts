@@ -1,13 +1,19 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Teacher } from '../model/teacher.model';
+import {Store} from "./store";
+import {FakeHttpService} from "./fake-http.service";
 
 @Injectable({
   providedIn: 'root',
 })
-export class TeacherStore {
+export class TeacherStore implements Store<Teacher> {
   private teachers = new BehaviorSubject<Teacher[]>([]);
   teachers$ = this.teachers.asObservable();
+
+  constructor(private http: FakeHttpService) {
+    this.http.fetchTeachers$.subscribe((t) => this.addAll(t));
+  }
 
   addAll(teachers: Teacher[]) {
     this.teachers.next(teachers);
