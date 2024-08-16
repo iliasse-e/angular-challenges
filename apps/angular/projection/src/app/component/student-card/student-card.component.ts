@@ -1,33 +1,45 @@
-import {Component, inject} from '@angular/core';
-import {randStudent} from '../../data-access/fake-http.service';
+import { AsyncPipe, NgIf } from '@angular/common';
+import { Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ICard } from '../../data-access/card';
+import { randStudent } from '../../data-access/fake-http.service';
 import { StudentStore } from '../../data-access/student.store';
 import { CardType } from '../../model/card.model';
-import { Student } from '../../model/student.model';
-import { CardComponent } from '../../ui/card/card.component';
-import {Observable} from "rxjs";
-import {AsyncPipe, NgIf} from "@angular/common";
-import {ICard} from "../../data-access/card";
+import {
+  CardComponent,
+  CardListItemDirective,
+} from '../../ui/card/card.component';
+import { ListItemComponent } from '../../ui/list-item/list-item.component';
 
 @Component({
   selector: 'app-student-card',
   template: `
     <app-card
-      [list]="students$ | async"
+      [list]="students()"
       [type]="cardType"
       (newItemEvent)="addNewItem()"
-      (deleteEvent)="deleteItem($event)"
       class="bg-light-green">
-      <img
-        src="assets/img/student.webp"
-        width="200px" />
+      <img src="assets/img/student.webp" width="200px" />
+
+      <ng-template card-list-item let-student>
+        <app-list-item (delete)="deleteItem(student.id)">
+          {{ student.firstName }}
+        </app-list-item>
+      </ng-template>
     </app-card>
   `,
   standalone: true,
-  imports: [CardComponent, AsyncPipe, NgIf],
+  imports: [
+    CardComponent,
+    AsyncPipe,
+    NgIf,
+    CardListItemDirective,
+    ListItemComponent,
+  ],
 })
 export class StudentCardComponent implements ICard {
   private store: StudentStore = inject(StudentStore);
-  students$: Observable<Student[]> = this.store.students$;
+  students = toSignal(this.store.students$, { initialValue: [] });
   cardType = CardType.STUDENT;
 
   addNewItem() {

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Teacher } from '../model/teacher.model';
-import {Store} from "./store";
-import {FakeHttpService} from "./fake-http.service";
+import { FakeHttpService } from './fake-http.service';
+import { Store } from './store';
 
 @Injectable({
   providedIn: 'root',
