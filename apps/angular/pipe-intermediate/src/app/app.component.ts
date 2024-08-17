@@ -1,14 +1,14 @@
 import { NgFor } from '@angular/common';
 import { Component, Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({ name: 'index', standalone: true })
+@Pipe({ name: 'compute', standalone: true })
 export class IndexPipe implements PipeTransform {
   transform(value: string, index: number): string {
     return `${value} - ${index}`;
   }
 }
 
-@Pipe({ name: 'allowedLabel', standalone: true })
+@Pipe({ name: 'allowance', standalone: true })
 export class AllowedPipe implements PipeTransform {
   transform(age: number, isFirst: boolean) {
     if (isFirst) {
@@ -25,8 +25,8 @@ export class AllowedPipe implements PipeTransform {
   selector: 'app-root',
   template: `
     <div *ngFor="let person of persons; let index = index; let isFirst = first">
-      {{ person.name | index: index }}
-      {{ person.age | allowedLabel: isFirst }}
+      {{ person.name | compute: index }}
+      {{ person.age | allowance: isFirst }}
     </div>
   `,
 })
