@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  viewChild,
+} from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { MaybeAsync } from '@angular/router';
+import { Observable } from 'rxjs';
+import { AlertDialogComponent } from '../ui/dialog.component';
 import { FormComponent } from '../ui/form.component';
 
 @Component({
@@ -12,4 +21,27 @@ import { FormComponent } from '../ui/form.component';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class JoinComponent {}
+export class JoinComponent {
+  #dialog = inject(MatDialog);
+
+  private formComponent = viewChild(FormComponent);
+
+  private hasUnsavedChanges(): boolean {
+    // We could use a signal that would be set by a form component ouput
+    return this.formComponent()?.isFormFilled === true;
+  }
+
+  private openAlertDialog(): Observable<boolean> {
+    let dialogRef = this.#dialog.open(AlertDialogComponent, {
+      disableClose: true,
+    });
+    return dialogRef.afterClosed();
+  }
+
+  canDeactivate(): MaybeAsync<boolean> {
+    if (this.hasUnsavedChanges()) {
+      return this.openAlertDialog();
+    }
+    return true;
+  }
+}

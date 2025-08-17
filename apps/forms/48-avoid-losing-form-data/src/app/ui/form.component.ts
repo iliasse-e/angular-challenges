@@ -71,6 +71,12 @@ export class FormComponent {
     message: '',
   });
 
+  get isFormFilled() {
+    // We can add a touched property check
+    const formValueList = Object.values(this.form.value);
+    return formValueList.some((value) => !!value.trim() !== false);
+  }
+
   onSubmit() {
     if (this.form.valid) this.form.reset();
   }
