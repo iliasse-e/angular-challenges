@@ -40,11 +40,25 @@ export class AppComponent {
   gpu = model(false);
 
   constructor() {
-    /* 
+    /*
       Explain for your junior team mate why this bug occurs ...
+
+      This solution exploits how JavaScript works and how it evaluates variables.
+      JavaScript looks inside code blocks for the variables it needs,
+      and if it doesn't find that variable, it will go to the next code block until it finds the variable.
+      When learning JavaScript, you should have run into this when learning about hoisting.
+
+      So to get the effect to run with the latest value of each signal, you just have to use each signal above the conditional.
+      The common convention is to create a variable to hold the signal value.
     */
     effect(() => {
-      if (this.drive() || this.ram() || this.gpu()) {
+      if (this.drive()) {
+        alert('Price increased!');
+      }
+      if (this.ram()) {
+        alert('Price increased!');
+      }
+      if (this.gpu()) {
         alert('Price increased!');
       }
     });
