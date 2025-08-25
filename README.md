@@ -36,6 +36,11 @@ Projection de contenu grâce à `ngcontent` & `ngTemplateOutlet`
 
 Dcoupler deux composants via l'implémentation d'un service et DI
 
+[Router Input](https://github.com/iliasse-e/angular-challenges/tree/router-input)
+
+Récupération des données de la route via `withComponentInputBinding()` pour l'id,
+de `ActivatedRoute` pour récupérer les données du queryParam et data (qu'on envoie dans la route)
+
 ####
 
 #### Form
