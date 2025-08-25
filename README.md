@@ -2,27 +2,9 @@
   <img src='./logo/angular-challenge.png' height="150px"/>
 </p>
 
-<p align='center' style='font-weight:bold'>Collection of Angular challenges</p>
-
-<br>
-
-## Intro
-
-This project has been created with three purposes:
-
-- The first purpose is to assist you in becoming better at Angular and its ecosystem. 💪
-- The second purpose is to share best practices and different implementations of the same problem to gain diverse perspectives. 📖
-- The last one is to lower the barrier to open source contribution.
-
-**Sharing knowledge can benefit everyone.**
-
-Furthermore, if you are struggling with a concept, please open an issue. I will attempt to create a challenge based on that idea.
-
-If you would like to propose a challenge, this project is open source, so feel free to share your ideas. They are more than welcome.
-
-> **Learning by reading is good but learning by doing is better.**
-
 ## Mes branches
+
+####
 
 #### Angular
 
@@ -54,6 +36,8 @@ Projection de contenu grâce à `ngcontent` & `ngTemplateOutlet`
 
 Dcoupler deux composants via l'implémentation d'un service et DI
 
+####
+
 #### Form
 
 [Avoid losing data](https://github.com/iliasse-e/angular-challenges/tree/avoid-losing-form-data)
@@ -64,13 +48,19 @@ Utilisation d'une guard (`CanDeactivate`) pour prevenir la perte de données lor
 
 Implémentation du Control value accessor
 
+####
+
 #### Signal
 
 [Signal Input migration](https://github.com/iliasse-e/angular-challenges/tree/signal-input-migration)
 
 Migration vers l'utilisation de signal inputs
 
+####
+
 #### RxJS
+
+####
 
 #### Test
 
