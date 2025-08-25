@@ -1,21 +1,18 @@
-import { AsyncPipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, input, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { map } from 'rxjs';
 
 @Component({
   selector: 'app-subscription',
-  imports: [AsyncPipe],
   template: `
-    <div>TestId: {{ testId$ | async }}</div>
-    <div>Permission: {{ permission$ | async }}</div>
-    <div>User: {{ user$ | async }}</div>
+    <div>TestId: {{ testId() }}</div>
+    <div>Permission: {{ permission() }}</div>
+    <div>User: {{ user() }}</div>
   `,
 })
 export default class TestComponent {
-  private activatedRoute = inject(ActivatedRoute);
+  readonly #activatedRoute = inject(ActivatedRoute);
 
-  testId$ = this.activatedRoute.params.pipe(map((p) => p['testId']));
-  permission$ = this.activatedRoute.data.pipe(map((d) => d['permission']));
-  user$ = this.activatedRoute.queryParams.pipe(map((q) => q['user']));
+  testId = input.required<string>(); // Récupère l'id grace withComponentInputBinding()
+  permission = signal(this.#activatedRoute.snapshot.data['permission']); // Récupère les données depuis la prop data dans le router
+  user = signal(this.#activatedRoute.snapshot.queryParams['user']); // Récupère les données depuis les queryParam que l'on a renseigné dans le composant principal
 }
