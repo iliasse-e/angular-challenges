@@ -69,6 +69,10 @@ Migration vers l'utilisation de signal inputs
 
 #### Test
 
+[Harness](https://github.com/iliasse-e/angular-challenges/tree/harness)
+
+Angular Material Harness testing
+
 ## Challenges
 
 Check [all 60 challenges](https://angular-challenges.vercel.app/)
