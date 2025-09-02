@@ -69,6 +69,12 @@ Migration vers l'utilisation de signal inputs
 
 #### Test
 
+Tests unitaire utilisant Testing library :
+[Checkbox](https://github.com/iliasse-e/angular-challenges/tree/checkbox)
+
+Tests unitaire (avec un ensemble de composants) utilisant Testing library :
+[Router](https://github.com/iliasse-e/angular-challenges/tree/testing-router)
+
 ## Challenges
 
 Check [all 60 challenges](https://angular-challenges.vercel.app/)
