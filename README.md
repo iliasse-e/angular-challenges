@@ -77,6 +77,8 @@ Tests unitaire (avec un ensemble de composants) utilisant Testing library :
 
 [Harness](https://github.com/iliasse-e/angular-challenges/tree/harness)
 
+[Nested components](https://github.com/iliasse-e/angular-challenges/tree/nested-components)
+
 Angular Material Harness testing
 
 ## Challenges
