@@ -40,6 +40,10 @@
       "cache": true,
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
+    },
+    "@angular/build:unit-test": {
+      "cache": true,
+      "inputs": ["default", "^production"]
     }
   },
   "namedInputs": {
@@ -56,9 +60,6 @@
       "!{projectRoot}/src/test-setup.[jt]s"
     ],
     "sharedGlobals": []
-  },
-  "cli": {
-    "packageManager": "npm"
   },
   "generators": {
     "@nx/angular:application": {

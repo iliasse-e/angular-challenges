@@ -26,6 +26,9 @@ const sponsors = [
   'DzoeL123',
   'allan1989',
   'pchessah',
+  'lukasss88',
+  'danncortes',
+  'Gw0zdziu'
 ];
 
 module.exports = {
