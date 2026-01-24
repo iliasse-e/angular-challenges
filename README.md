@@ -67,6 +67,8 @@ Migration vers l'utilisation de signal inputs
 
 [Signal form migration](https://github.com/iliasse-e/angular-challenges/tree/signal-form-simple)
 
+[Signal form migration with custom validation](https://github.com/iliasse-e/angular-challenges/tree/signal-form-migration)
+
 ####
 
 #### RxJS
