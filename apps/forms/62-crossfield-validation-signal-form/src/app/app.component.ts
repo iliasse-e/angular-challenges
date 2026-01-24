@@ -1,67 +1,25 @@
 import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import {
-  AbstractControl,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  ValidationErrors,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
+  email,
+  Field,
+  form,
+  min,
+  required,
+  validate,
+} from '@angular/forms/signals';
 
-function passwordMatchValidator(): ValidatorFn {
-  return (control: AbstractControl): ValidationErrors | null => {
-    const form = control as FormGroup;
-    if (!form) {
-      return null;
-    }
-
-    const password = form.value.password;
-    const confirmPassword = form.value.confirmPassword;
-
-    if (!confirmPassword) {
-      return null;
-    }
-
-    if (password !== confirmPassword) {
-      form.controls['confirmPassword'].setErrors({ passwordMismatch: true });
-    }
-
-    return null;
-  };
-}
-
-function endDateAfterStartDateValidator(): ValidatorFn {
-  return (control: AbstractControl): ValidationErrors | null => {
-    const form = control as FormGroup;
-    if (!form) {
-      return null;
-    }
-
-    const startDate = form.value.startDate;
-    const endDate = form.value.endDate;
-
-    if (!startDate || !endDate) {
-      return null;
-    }
-
-    const start = new Date(startDate).getTime();
-    const end = new Date(endDate).getTime();
-
-    if (end > start) {
-      form.controls['endDate'].setErrors(null);
-    } else {
-      form.controls['endDate'].setErrors({ endDateBeforeStart: true });
-    }
-
-    return null;
-  };
+interface IRegisterData {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  startDate: string;
+  endDate: string;
 }
 
 @Component({
   selector: 'app-root',
-  imports: [ReactiveFormsModule, JsonPipe],
+  imports: [JsonPipe, Field],
   template: `
     <div class="min-h-screen bg-gray-100 px-4 py-12 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-md rounded-lg bg-white p-8 shadow-md">
@@ -70,7 +28,7 @@ function endDateAfterStartDateValidator(): ValidatorFn {
           This form demonstrates cross field validation with reactive forms
         </p>
 
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
+        <form class="space-y-6">
           <div>
             <label
               for="email"
@@ -81,22 +39,18 @@ function endDateAfterStartDateValidator(): ValidatorFn {
             <input
               id="email"
               type="email"
-              formControlName="email"
+              [field]="registerForm.email"
               placeholder="Enter your email"
               class="w-full rounded-md border border-gray-300 px-4 py-2 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               [class.border-red-500]="
-                form.controls.email.invalid && !form.controls.email.untouched
+                registerForm.email().invalid() && registerForm.email().touched()
               " />
             @if (
-              form.controls.email.invalid && !form.controls.email.untouched
+              registerForm.email().invalid() && registerForm.email().touched()
             ) {
-              <p class="mt-1 text-sm text-red-600">
-                @if (form.controls.email.hasError('required')) {
-                  Email is required
-                } @else if (form.controls.email.hasError('email')) {
-                  Please enter a valid email address
-                }
-              </p>
+              @for (error of registerForm.email().errors(); track $index) {
+                <p class="mt-1 text-sm text-red-600">{{ error.message }}</p>
+              }
             }
           </div>
 
@@ -110,24 +64,20 @@ function endDateAfterStartDateValidator(): ValidatorFn {
             <input
               id="password"
               type="password"
-              formControlName="password"
+              [field]="registerForm.password"
               placeholder="Enter your password"
               class="w-full rounded-md border border-gray-300 px-4 py-2 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               [class.border-red-500]="
-                form.controls.password.invalid &&
-                !form.controls.password.untouched
+                registerForm.password().invalid() &&
+                registerForm.password().touched()
               " />
             @if (
-              form.controls.password.invalid &&
-              !form.controls.password.untouched
+              registerForm.password().invalid() &&
+              registerForm.password().touched()
             ) {
-              <p class="mt-1 text-sm text-red-600">
-                @if (form.controls.password.hasError('required')) {
-                  Password is required
-                } @else if (form.controls.password.hasError('minlength')) {
-                  Password must be at least 6 characters
-                }
-              </p>
+              @for (error of registerForm.password().errors(); track $index) {
+                <p class="mt-1 text-sm text-red-600">{{ error.message }}</p>
+              }
             }
           </div>
 
@@ -141,26 +91,23 @@ function endDateAfterStartDateValidator(): ValidatorFn {
             <input
               id="confirmPassword"
               type="password"
-              formControlName="confirmPassword"
+              [field]="registerForm.confirmPassword"
               placeholder="Confirm your password"
               class="w-full rounded-md border border-gray-300 px-4 py-2 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               [class.border-red-500]="
-                form.controls.confirmPassword.invalid &&
-                !form.controls.confirmPassword.untouched
+                registerForm.confirmPassword().invalid() &&
+                registerForm.confirmPassword().touched()
               " />
             @if (
-              form.controls.confirmPassword.invalid &&
-              !form.controls.confirmPassword.untouched
+              registerForm.confirmPassword().invalid() &&
+              registerForm.confirmPassword().touched()
             ) {
-              <p class="mt-1 text-sm text-red-600">
-                @if (form.controls.confirmPassword.hasError('required')) {
-                  Please confirm your password
-                } @else if (
-                  form.controls.confirmPassword.hasError('passwordMismatch')
-                ) {
-                  Passwords do not match
-                }
-              </p>
+              @for (
+                error of registerForm.confirmPassword().errors();
+                track $index
+              ) {
+                <p class="mt-1 text-sm text-red-600">{{ error.message }}</p>
+              }
             }
           </div>
 
@@ -174,15 +121,15 @@ function endDateAfterStartDateValidator(): ValidatorFn {
             <input
               id="startDate"
               type="date"
-              formControlName="startDate"
+              [field]="registerForm.startDate"
               class="w-full rounded-md border border-gray-300 px-4 py-2 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               [class.border-red-500]="
-                form.controls.startDate.invalid &&
-                !form.controls.startDate.untouched
+                registerForm.startDate().invalid() &&
+                registerForm.startDate().touched()
               " />
             @if (
-              form.controls.startDate.invalid &&
-              !form.controls.startDate.untouched
+              registerForm.startDate().invalid() &&
+              registerForm.startDate().touched()
             ) {
               <p class="mt-1 text-sm text-red-600">Start date is required</p>
             }
@@ -198,31 +145,26 @@ function endDateAfterStartDateValidator(): ValidatorFn {
             <input
               id="endDate"
               type="date"
-              formControlName="endDate"
+              [field]="registerForm.endDate"
               class="w-full rounded-md border border-gray-300 px-4 py-2 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               [class.border-red-500]="
-                form.controls.endDate.invalid &&
-                !form.controls.endDate.untouched
+                registerForm.endDate().invalid() &&
+                registerForm.endDate().touched()
               " />
             @if (
-              form.controls.endDate.invalid && !form.controls.endDate.untouched
+              registerForm.endDate().invalid() &&
+              registerForm.endDate().touched()
             ) {
-              <p class="mt-1 text-sm text-red-600">
-                @if (form.controls.endDate.hasError('required')) {
-                  End date is required
-                } @else if (
-                  form.controls.endDate.hasError('endDateBeforeStart')
-                ) {
-                  End date must be after start date
-                }
-              </p>
+              @for (error of registerForm.endDate().errors(); track $index) {
+                <p class="mt-1 text-sm text-red-600">{{ error.message }}</p>
+              }
             }
           </div>
 
           <div class="flex gap-4">
             <button
-              type="submit"
-              [disabled]="form.invalid"
+              (click)="onSubmit($event)"
+              [disabled]="registerForm().invalid()"
               class="flex-1 rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400">
               Submit
             </button>
@@ -241,25 +183,25 @@ function endDateAfterStartDateValidator(): ValidatorFn {
             <div class="flex justify-between">
               <span class="font-medium text-gray-700">Valid:</span>
               <span
-                [class.text-green-600]="form.valid"
-                [class.text-red-600]="form.invalid">
-                {{ form.valid ? 'Yes' : 'No' }}
+                [class.text-green-600]="registerForm().valid()"
+                [class.text-red-600]="registerForm().invalid()">
+                {{ registerForm().valid() ? 'Yes' : 'No' }}
               </span>
             </div>
             <div class="flex justify-between">
               <span class="font-medium text-gray-700">Touched:</span>
-              <span>{{ !form.untouched ? 'Yes' : 'No' }}</span>
+              <span>{{ registerForm().touched() ? 'Yes' : 'No' }}</span>
             </div>
             <div class="flex justify-between">
               <span class="font-medium text-gray-700">Dirty:</span>
-              <span>{{ form.dirty ? 'Yes' : 'No' }}</span>
+              <span>{{ registerForm().dirty() ? 'Yes' : 'No' }}</span>
             </div>
           </div>
           <div class="mt-4">
             <h3 class="mb-2 font-medium text-gray-700">Form Value:</h3>
             <pre
               class="overflow-x-auto rounded bg-gray-800 p-3 text-xs text-gray-100"
-              >{{ form.value | json }}</pre
+              >{{ registerForm().value() | json }}</pre
             >
           </div>
         </div>
@@ -271,7 +213,7 @@ function endDateAfterStartDateValidator(): ValidatorFn {
             </h2>
             <pre
               class="overflow-x-auto rounded bg-green-800 p-3 text-xs text-green-100"
-              >{{ this.form.getRawValue() | json }}</pre
+              >{{ this.registerForm().value() | json }}</pre
             >
           </div>
         }
@@ -283,46 +225,84 @@ function endDateAfterStartDateValidator(): ValidatorFn {
 export class AppComponent {
   public isSubmitted = signal(false);
 
-  form = new FormGroup(
-    {
-      email: new FormControl('', [Validators.required, Validators.email]),
-      password: new FormControl('', [
-        Validators.required,
-        Validators.minLength(6),
-      ]),
-      confirmPassword: new FormControl('', [Validators.required]),
-      startDate: new FormControl('', [Validators.required]),
-      endDate: new FormControl('', [Validators.required]),
-    },
-    {
-      validators: [passwordMatchValidator(), endDateAfterStartDateValidator()],
-    },
-  );
+  registerModel = signal<IRegisterData>({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    startDate: '',
+    endDate: '',
+  });
 
-  // constructor() {
-  //   this.form.controls.password.valueChanges
-  //     .pipe(takeUntilDestroyed())
-  //     .subscribe(() => {
-  //       this.form.controls.confirmPassword.updateValueAndValidity();
-  //     });
-  //
-  //   this.form.controls.startDate.valueChanges
-  //     .pipe(takeUntilDestroyed())
-  //     .subscribe(() => {
-  //       this.form.controls.endDate.updateValueAndValidity();
-  //     });
-  // }
+  registerForm = form(this.registerModel, (fieldPath) => {
+    (required(fieldPath.email, { message: 'Email is required' }),
+      email(fieldPath.email, { message: 'Please enter a valid email address' }),
+      required(fieldPath.password, { message: 'Password is required' }),
+      min(fieldPath.password, 6, {
+        message: 'Password must be at least 6 characters',
+      }),
+      required(fieldPath.confirmPassword, { message: 'Password is required' }),
+      min(fieldPath.confirmPassword, 6, {
+        message: 'Password must be at least 6 characters',
+      }),
+      required(fieldPath.startDate, { message: 'Start date is required' }),
+      required(fieldPath.endDate, { message: 'End date is required' }),
+      validate(fieldPath.confirmPassword, ({ value, valueOf }) => {
+        const confirmPassword = value();
+        const password = valueOf(fieldPath.password);
 
-  onSubmit() {
-    console.log('Submitting form...', this.form);
-    if (this.form.valid) {
+        if (!confirmPassword) {
+          return null;
+        }
+
+        if (confirmPassword !== password) {
+          return {
+            kind: 'passwordMismatch',
+            message: 'Passwords do not match',
+          };
+        }
+
+        return null;
+      }));
+
+    validate(fieldPath.endDate, ({ value, valueOf }) => {
+      const endDate = value();
+      const startDate = valueOf(fieldPath.startDate);
+
+      if (!endDate || !endDate) {
+        return null;
+      }
+
+      const start = new Date(startDate).getTime();
+      const end = new Date(endDate).getTime();
+
+      if (end < start) {
+        return {
+          kind: 'endDateBeforeStart',
+          message: 'Passwords do not match',
+        };
+      }
+
+      return null;
+    });
+  });
+
+  onSubmit(e: Event) {
+    e.preventDefault();
+    console.log('Submitting form...', this.registerForm());
+    if (this.registerForm().valid()) {
       this.isSubmitted.set(true);
-      console.log('Form submitted:', this.form.getRawValue());
+      console.log('Form submitted:', {
+        ...this.registerForm().value(),
+        startDate: new Date(
+          this.registerForm().value().startDate,
+        ).toISOString(),
+        endDate: new Date(this.registerForm().value().endDate).toISOString(),
+      });
     }
   }
 
   onReset() {
-    this.form.reset();
+    this.registerForm().reset(this.registerModel());
     this.isSubmitted.set(false);
   }
 }
