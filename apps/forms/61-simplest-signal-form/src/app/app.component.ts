@@ -5,23 +5,25 @@ import {
   signal,
   WritableSignal,
 } from '@angular/core';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { form, FormField, max, min, required } from '@angular/forms/signals';
+
+interface SimpleData {
+  name: string;
+  lastname: string;
+  age: number | null;
+  note: string;
+}
 
 @Component({
   selector: 'app-root',
-  imports: [ReactiveFormsModule, JsonPipe],
+  imports: [FormField, JsonPipe],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="min-h-screen bg-gray-100 px-4 py-12 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-md rounded-lg bg-white p-8 shadow-md">
         <h1 class="mb-6 text-3xl font-bold text-gray-900">Simple Form</h1>
 
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
+        <form (submit)="onSubmit($event)" class="space-y-6">
           <div>
             <label
               for="name"
@@ -32,14 +34,16 @@ import {
             <input
               id="name"
               type="text"
-              formControlName="name"
               placeholder="Enter your name"
               class="w-full rounded-md border border-gray-300 px-4 py-2 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               [class.border-red-500]="
-                form.controls.name.invalid && !form.controls.name.untouched
-              " />
-            @if (form.controls.name.invalid && !form.controls.name.untouched) {
-              <p class="mt-1 text-sm text-red-600">Name is required</p>
+                simpleForm.name().invalid() && simpleForm.name().touched()
+              "
+              [formField]="simpleForm.name" />
+            @if (simpleForm.name().invalid() && simpleForm.name().touched()) {
+              <p class="mt-1 text-sm text-red-600">
+                {{ simpleForm.name().errors().find(e => e.kind === 'required')?.message }}
+              </p>
             }
           </div>
 
@@ -52,9 +56,9 @@ import {
             <input
               id="lastname"
               type="text"
-              formControlName="lastname"
               placeholder="Enter your last name"
-              class="w-full rounded-md border border-gray-300 px-4 py-2 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500" />
+              class="w-full rounded-md border border-gray-300 px-4 py-2 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+              [formField]="simpleForm.lastname" />
           </div>
 
           <div>
@@ -66,21 +70,19 @@ import {
             <input
               id="age"
               type="number"
-              formControlName="age"
               placeholder="Enter your age (1-99)"
-              min="1"
-              max="99"
               class="w-full rounded-md border border-gray-300 px-4 py-2 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               [class.border-red-500]="
-                form.controls.age.invalid && !form.controls.age.untouched
-              " />
-            @if (form.controls.age.invalid && !form.controls.age.untouched) {
+                simpleForm.age().invalid() && simpleForm.age().touched()
+              "
+              [formField]="simpleForm.age" />
+            @if (simpleForm.age().invalid() && simpleForm.age().touched()) {
               <p class="mt-1 text-sm text-red-600">
-                @if (form.controls.age.hasError('min')) {
-                  Age must be at least 1
+                @if (simpleForm.age().errors().some(e => e.kind === 'min')) {
+                  {{simpleForm.age().errors().find(e => e.kind === 'min')?.message}}
                 }
-                @if (form.controls.age.hasError('max')) {
-                  Age must be at most 99
+                @if (simpleForm.age().errors().some(e => e.kind === 'max')) {
+                  {{simpleForm.age().errors().find(e => e.kind === 'max')?.message}}
                 }
               </p>
             }
@@ -95,15 +97,15 @@ import {
             <input
               id="note"
               type="text"
-              formControlName="note"
               placeholder="Enter a note"
-              class="w-full rounded-md border border-gray-300 px-4 py-2 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500" />
+              class="w-full rounded-md border border-gray-300 px-4 py-2 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+              [formField]="simpleForm.note" />
           </div>
 
           <div class="flex gap-4">
             <button
               type="submit"
-              [disabled]="form.invalid"
+              [disabled]="simpleForm().invalid()"
               class="flex-1 rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400">
               Submit
             </button>
@@ -132,35 +134,38 @@ import {
   `,
 })
 export class AppComponent {
-  form = new FormGroup({
-    name: new FormControl('', {
-      validators: Validators.required,
-      nonNullable: true,
-    }),
-    lastname: new FormControl('', { nonNullable: true }),
-    age: new FormControl<number | null>(null, [
-      Validators.min(1),
-      Validators.max(99),
-    ]),
-    note: new FormControl('', { nonNullable: true }),
+  // Form model
+  simpleModel = signal<SimpleData>({
+    name: '',
+    lastname: '',
+    age: null,
+    note: '',
   });
 
-  submittedData: WritableSignal<{
-    name: string;
-    lastname: string;
-    age: number | null;
-    note: string;
-  } | null> = signal(null);
+  // Init form and creates a form wrapped around the given model data
+  simpleForm = form(this.simpleModel, (field) => {
+    required(field.name, { message: 'Name is required' });
+    min(field.age, 1, { message: 'Age must be at least 1' });
+    max(field.age, 99, { message: 'Age must be at most 99' });
+  });
 
-  onSubmit(): void {
-    if (this.form.valid) {
-      this.submittedData.set(this.form.getRawValue());
-      console.log('Form submitted:', this.submittedData);
+  submittedData: WritableSignal<SimpleData | null> = signal(null);
+
+  onSubmit(e: Event): void {
+    e.preventDefault();
+    if (this.simpleForm().valid()) {
+      this.submittedData.set(this.simpleModel());
+      console.log('Form submitted:', this.submittedData());
     }
   }
 
   onReset(): void {
-    this.form.reset();
+    this.simpleModel.set({
+      name: '',
+      lastname: '',
+      age: null,
+      note: '',
+    });
     this.submittedData.set(null);
   }
 }
