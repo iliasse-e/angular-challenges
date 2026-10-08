@@ -1,94 +1,46 @@
-<p align='center'>
-  <img src='./logo/angular-challenge.png' height="150px"/>
-</p>
+## Cross field validation
 
-## Mes branches
+Il s'agit de valider un champs "confirmation de mot de passe" via les données du champ "mot de passe".
 
-####
+Pour ce faire, on utilise la fonction `validate()` du package `@angular/forms/signals`.  
+Il faut importé `validate` depuis `@angular/forms/signals`.  
+On definit la logique de validation dans une fonction qui prend en paramètre le champ et les données du champ.  
+Dans notre cas on a :
 
-#### Angular
+```typescript
+validate(path.confirmPassword, ({ value, valueOf }) => {
+  if (value() !== valueOf(path.password)) {
+    return {
+      kind: 'passwordMismatch',
+      message: 'Passwords do not match',
+    };
+  }
+  return null;
+}),
+```
 
-[CRUD Store](https://github.com/iliasse-e/angular-challenges/blob/crud)
+Voir la documentation:
+[Cross field validation](https://angular.dev/docs/signals/guide/crossfield-validation)
 
-Implémentation d'un store avec un CRUD
+## Submission des données
 
-[Effect](https://github.com/iliasse-e/angular-challenges/tree/effect)
+Pour soumettre le formulaire, on utilise la propriété `submission` du schéma.  
+Elle prend un objet avec une propriété `action` qui est une fonction qui prend en paramètre le champ et les données du champ.  
+Dans notre cas on a :
 
-Fix d'un bug Javascript dans l'utilisation de `effect()`
+```typescript
+submission: {
+            action: async (f) => {
+              if (f().valid()) {
+                // On appelle le serveur, on recupère la réponse et la traite ...
+              }
+              // Si on a une réponse d'un serveur
+              return { kind: 'serverError', message: 'Failed to submit form' };
+            },
+          },
+```
 
-[Scroll](https://github.com/iliasse-e/angular-challenges/tree/scroll)
+On peut donc supprimer la méthode `onSubmit()`, et ajouter [formRoot]="form" dans le template
 
-Utilisation d'un provider Angular pour mettre en place la navigation par scroll ()
-
-[Pure pipe](https://github.com/iliasse-e/angular-challenges/tree/refactor/pure-pipe-easy)
-
-Pipe simple pour la transformation de données
-
-[Pure pipe intermediaire](https://github.com/iliasse-e/angular-challenges/tree/pure-pipe-intermediate)
-
-Pipe intermédiaire pour la transformation de données
-
-[Projection](https://github.com/iliasse-e/angular-challenges/tree/projection)
-
-Projection de contenu grâce à `ngcontent` & `ngTemplateOutlet`
-
-[Decoupling component](https://github.com/iliasse-e/angular-challenges/tree/decoupling-33)
-
-Dcoupler deux composants via l'implémentation d'un service et DI
-
-[Router Input](https://github.com/iliasse-e/angular-challenges/tree/router-input)
-
-Récupération des données de la route via `withComponentInputBinding()` pour l'id,
-de `ActivatedRoute` pour récupérer les données du queryParam et data (qu'on envoie dans la route)
-
-####
-
-#### Form
-
-[Avoid losing data](https://github.com/iliasse-e/angular-challenges/tree/avoid-losing-form-data)
-
-Utilisation d'une guard (`CanDeactivate`) pour prevenir la perte de données lors d'une navigation
-
-[CVA](https://github.com/iliasse-e/angular-challenges/tree/controlvalue-accessor)
-
-Implémentation du Control value accessor
-
-####
-
-#### Signal
-
-[Signal Input migration](https://github.com/iliasse-e/angular-challenges/tree/signal-input-migration)
-
-Migration vers l'utilisation de signal inputs
-
-####
-
-#### Signal form
-
-[Signal form migration](https://github.com/iliasse-e/angular-challenges/tree/signal-form-simple)
-
-[Signal form migration with custom validation](https://github.com/iliasse-e/angular-challenges/tree/signal-form-migration)
-
-####
-
-#### RxJS
-
-####
-
-#### Test
-
-Tests unitaire utilisant Testing library :
-[Checkbox](https://github.com/iliasse-e/angular-challenges/tree/checkbox)
-
-Tests unitaire (avec un ensemble de composants) utilisant Testing library :
-[Router](https://github.com/iliasse-e/angular-challenges/tree/testing-router)
-
-[Harness](https://github.com/iliasse-e/angular-challenges/tree/harness)
-
-[Nested components](https://github.com/iliasse-e/angular-challenges/tree/nested-components)
-
-Angular Material Harness testing
-
-## Challenges
-
-Check [all 60 challenges](https://angular-challenges.vercel.app/)
+Voir la documentation:
+[Submission des données](https://angular.dev/docs/signals/guide/form-submission)
