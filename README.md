@@ -69,6 +69,8 @@ Migration vers l'utilisation de signal inputs
 
 [Signal form migration with custom validation](https://github.com/iliasse-e/angular-challenges/tree/signal-form-migration)
 
+[Cross-field validation with signal form](https://github.com/iliasse-e/angular-challenges/tree/62-crossfield-validation-signal-form)
+
 ####
 
 #### RxJS
