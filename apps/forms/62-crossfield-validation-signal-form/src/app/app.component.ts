@@ -1,67 +1,35 @@
 import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import {
-  AbstractControl,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  ValidationErrors,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
+  email,
+  FieldTree,
+  form,
+  FormField,
+  FormRoot,
+  required,
+  schema,
+  validate,
+} from '@angular/forms/signals';
 
-function passwordMatchValidator(): ValidatorFn {
-  return (control: AbstractControl): ValidationErrors | null => {
-    const form = control as FormGroup;
-    if (!form) {
-      return null;
-    }
+type Model = {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  startDate: string;
+  endDate: string;
+};
 
-    const password = form.value.password;
-    const confirmPassword = form.value.confirmPassword;
-
-    if (!confirmPassword) {
-      return null;
-    }
-
-    if (password !== confirmPassword) {
-      form.controls['confirmPassword'].setErrors({ passwordMismatch: true });
-    }
-
-    return null;
-  };
-}
-
-function endDateAfterStartDateValidator(): ValidatorFn {
-  return (control: AbstractControl): ValidationErrors | null => {
-    const form = control as FormGroup;
-    if (!form) {
-      return null;
-    }
-
-    const startDate = form.value.startDate;
-    const endDate = form.value.endDate;
-
-    if (!startDate || !endDate) {
-      return null;
-    }
-
-    const start = new Date(startDate).getTime();
-    const end = new Date(endDate).getTime();
-
-    if (end > start) {
-      form.controls['endDate'].setErrors(null);
-    } else {
-      form.controls['endDate'].setErrors({ endDateBeforeStart: true });
-    }
-
-    return null;
-  };
-}
+const INIT_VALUE: Model = {
+  email: '',
+  password: '',
+  confirmPassword: '',
+  startDate: '',
+  endDate: '',
+};
 
 @Component({
   selector: 'app-root',
-  imports: [ReactiveFormsModule, JsonPipe],
+  imports: [JsonPipe, FormField, FormRoot],
   template: `
     <div class="min-h-screen bg-gray-100 px-4 py-12 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-md rounded-lg bg-white p-8 shadow-md">
@@ -70,7 +38,7 @@ function endDateAfterStartDateValidator(): ValidatorFn {
           This form demonstrates cross field validation with reactive forms
         </p>
 
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
+        <form [formRoot]="form" class="space-y-6">
           <div>
             <label
               for="email"
@@ -81,19 +49,21 @@ function endDateAfterStartDateValidator(): ValidatorFn {
             <input
               id="email"
               type="email"
-              formControlName="email"
+              [formField]="form.email"
               placeholder="Enter your email"
-              class="w-full rounded-md border border-gray-300 px-4 py-2 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+              class="w-full rounded-md border border-gray-300 px-4 py-2 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               [class.border-red-500]="
-                form.controls.email.invalid && !form.controls.email.untouched
+                form.email().invalid() && form.email().touched()
               " />
-            @if (
-              form.controls.email.invalid && !form.controls.email.untouched
-            ) {
+            @if (form.email().invalid() && form.email().touched()) {
               <p class="mt-1 text-sm text-red-600">
-                @if (form.controls.email.hasError('required')) {
+                @if (
+                  form.email().errors()?.some((error) => error.kind === 'required')
+                ) {
                   Email is required
-                } @else if (form.controls.email.hasError('email')) {
+                } @else if (
+                  form.email().errors()?.some((error) => error.kind === 'email')
+                ) {
                   Please enter a valid email address
                 }
               </p>
@@ -110,21 +80,21 @@ function endDateAfterStartDateValidator(): ValidatorFn {
             <input
               id="password"
               type="password"
-              formControlName="password"
+              [formField]="form.password"
               placeholder="Enter your password"
-              class="w-full rounded-md border border-gray-300 px-4 py-2 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+              class="w-full rounded-md border border-gray-300 px-4 py-2 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               [class.border-red-500]="
-                form.controls.password.invalid &&
-                !form.controls.password.untouched
+                form.password().invalid() && form.password().touched()
               " />
-            @if (
-              form.controls.password.invalid &&
-              !form.controls.password.untouched
-            ) {
+            @if (form.password().invalid() && form.password().touched()) {
               <p class="mt-1 text-sm text-red-600">
-                @if (form.controls.password.hasError('required')) {
+                @if (
+                  form.password().errors()?.some((error) => error.kind === 'required')
+                ) {
                   Password is required
-                } @else if (form.controls.password.hasError('minlength')) {
+                } @else if (
+                  form.password().errors()?.some((error) => error.kind === 'minlength')
+                ) {
                   Password must be at least 6 characters
                 }
               </p>
@@ -141,22 +111,24 @@ function endDateAfterStartDateValidator(): ValidatorFn {
             <input
               id="confirmPassword"
               type="password"
-              formControlName="confirmPassword"
+              [formField]="form.confirmPassword"
               placeholder="Confirm your password"
-              class="w-full rounded-md border border-gray-300 px-4 py-2 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+              class="w-full rounded-md border border-gray-300 px-4 py-2 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               [class.border-red-500]="
-                form.controls.confirmPassword.invalid &&
-                !form.controls.confirmPassword.untouched
+                form.confirmPassword().invalid() &&
+                form.confirmPassword().touched()
               " />
             @if (
-              form.controls.confirmPassword.invalid &&
-              !form.controls.confirmPassword.untouched
+              form.confirmPassword().invalid() &&
+              form.confirmPassword().touched()
             ) {
               <p class="mt-1 text-sm text-red-600">
-                @if (form.controls.confirmPassword.hasError('required')) {
-                  Please confirm your password
+                @if (
+                  form.confirmPassword().errors()?.some((error) => error.kind === 'required')
+                ) {
+                  Password is required
                 } @else if (
-                  form.controls.confirmPassword.hasError('passwordMismatch')
+                  form.confirmPassword().errors()?.some((error) => error.kind === 'passwordMismatch')
                 ) {
                   Passwords do not match
                 }
@@ -174,16 +146,12 @@ function endDateAfterStartDateValidator(): ValidatorFn {
             <input
               id="startDate"
               type="date"
-              formControlName="startDate"
-              class="w-full rounded-md border border-gray-300 px-4 py-2 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+              [formField]="form.startDate"
+              class="w-full rounded-md border border-gray-300 px-4 py-2 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               [class.border-red-500]="
-                form.controls.startDate.invalid &&
-                !form.controls.startDate.untouched
+                form.startDate().invalid() && form.startDate().touched()
               " />
-            @if (
-              form.controls.startDate.invalid &&
-              !form.controls.startDate.untouched
-            ) {
+            @if (form.startDate().invalid() && form.startDate().touched()) {
               <p class="mt-1 text-sm text-red-600">Start date is required</p>
             }
           </div>
@@ -198,20 +166,19 @@ function endDateAfterStartDateValidator(): ValidatorFn {
             <input
               id="endDate"
               type="date"
-              formControlName="endDate"
-              class="w-full rounded-md border border-gray-300 px-4 py-2 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+              [formField]="form.endDate"
+              class="w-full rounded-md border border-gray-300 px-4 py-2 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               [class.border-red-500]="
-                form.controls.endDate.invalid &&
-                !form.controls.endDate.untouched
+                form.endDate().invalid() && form.endDate().touched()
               " />
-            @if (
-              form.controls.endDate.invalid && !form.controls.endDate.untouched
-            ) {
+            @if (form.endDate().invalid() && form.endDate().touched()) {
               <p class="mt-1 text-sm text-red-600">
-                @if (form.controls.endDate.hasError('required')) {
+                @if (
+                  form.endDate().errors()?.some((error) => error.kind === 'required')
+                ) {
                   End date is required
                 } @else if (
-                  form.controls.endDate.hasError('endDateBeforeStart')
+                  form.endDate().errors()?.some((error) => error.kind === 'endDateBeforeStart')
                 ) {
                   End date must be after start date
                 }
@@ -222,7 +189,7 @@ function endDateAfterStartDateValidator(): ValidatorFn {
           <div class="flex gap-4">
             <button
               type="submit"
-              [disabled]="form.invalid"
+              [disabled]="form().invalid()"
               class="flex-1 rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400">
               Submit
             </button>
@@ -241,25 +208,25 @@ function endDateAfterStartDateValidator(): ValidatorFn {
             <div class="flex justify-between">
               <span class="font-medium text-gray-700">Valid:</span>
               <span
-                [class.text-green-600]="form.valid"
-                [class.text-red-600]="form.invalid">
-                {{ form.valid ? 'Yes' : 'No' }}
+                [class.text-green-600]="form().valid()"
+                [class.text-red-600]="form().invalid()">
+                {{ form().valid() ? 'Yes' : 'No' }}
               </span>
             </div>
             <div class="flex justify-between">
               <span class="font-medium text-gray-700">Touched:</span>
-              <span>{{ !form.untouched ? 'Yes' : 'No' }}</span>
+              <span>{{ form().touched() ? 'Yes' : 'No' }}</span>
             </div>
             <div class="flex justify-between">
               <span class="font-medium text-gray-700">Dirty:</span>
-              <span>{{ form.dirty ? 'Yes' : 'No' }}</span>
+              <span>{{ form().dirty() ? 'Yes' : 'No' }}</span>
             </div>
           </div>
           <div class="mt-4">
             <h3 class="mb-2 font-medium text-gray-700">Form Value:</h3>
             <pre
               class="overflow-x-auto rounded bg-gray-800 p-3 text-xs text-gray-100"
-              >{{ form.value | json }}</pre
+              >{{ form().value() | json }}</pre
             >
           </div>
         </div>
@@ -271,7 +238,7 @@ function endDateAfterStartDateValidator(): ValidatorFn {
             </h2>
             <pre
               class="overflow-x-auto rounded bg-green-800 p-3 text-xs text-green-100"
-              >{{ this.form.getRawValue() | json }}</pre
+              >{{ this.form().value() | json }}</pre
             >
           </div>
         }
@@ -283,46 +250,58 @@ function endDateAfterStartDateValidator(): ValidatorFn {
 export class AppComponent {
   public isSubmitted = signal(false);
 
-  form = new FormGroup(
-    {
-      email: new FormControl('', [Validators.required, Validators.email]),
-      password: new FormControl('', [
-        Validators.required,
-        Validators.minLength(6),
-      ]),
-      confirmPassword: new FormControl('', [Validators.required]),
-      startDate: new FormControl('', [Validators.required]),
-      endDate: new FormControl('', [Validators.required]),
-    },
-    {
-      validators: [passwordMatchValidator(), endDateAfterStartDateValidator()],
-    },
+  data = signal(INIT_VALUE);
+
+  form = form(
+    this.data,
+    schema<Model>((path) => {
+      (required(path.email, { message: 'Email is required' }),
+        email(path.email, { message: 'Enter a valid email adress' }),
+        required(path.password, { message: 'Password is required' }),
+        required(path.confirmPassword, {
+          message: 'Password confirmation is required',
+        }),
+        required(path.startDate, { message: 'Start date is required' }),
+        required(path.endDate, { message: 'End date is required' }),
+        // validate() permet le custom validation
+        validate(path.confirmPassword, ({ value, valueOf }) => {
+          if (value() !== valueOf(path.password)) {
+            return {
+              kind: 'passwordMismatch',
+              message: 'Passwords do not match',
+            };
+          }
+          return null;
+        }),
+        validate(path.endDate, ({ value, valueOf }) => {
+          if (value() <= valueOf(path.startDate)) {
+            return {
+              kind: 'endDateBeforeStart',
+              message: 'End date must be after start date',
+            };
+          }
+          return null;
+        }),
+        {
+          // submission permet de gérer l'envoie du formulaire et de supprimer la methode onSubmit() (il faut ajouter [formRoot]="form" dans le template)
+          submission: {
+            action: async (
+              f: FieldTree<Model, string | number, 'writable'>,
+            ) => {
+              if (f().valid()) {
+                console.log('Submitting form...', f().value());
+                this.isSubmitted.set(true);
+              }
+              // Ici c'est dans le cas ou on a une réponse d'un serveur
+              return { kind: 'serverError', message: 'Failed to submit form' };
+            },
+          },
+        });
+    }),
   );
 
-  // constructor() {
-  //   this.form.controls.password.valueChanges
-  //     .pipe(takeUntilDestroyed())
-  //     .subscribe(() => {
-  //       this.form.controls.confirmPassword.updateValueAndValidity();
-  //     });
-  //
-  //   this.form.controls.startDate.valueChanges
-  //     .pipe(takeUntilDestroyed())
-  //     .subscribe(() => {
-  //       this.form.controls.endDate.updateValueAndValidity();
-  //     });
-  // }
-
-  onSubmit() {
-    console.log('Submitting form...', this.form);
-    if (this.form.valid) {
-      this.isSubmitted.set(true);
-      console.log('Form submitted:', this.form.getRawValue());
-    }
-  }
-
   onReset() {
-    this.form.reset();
+    this.form().reset(INIT_VALUE);
     this.isSubmitted.set(false);
   }
 }
